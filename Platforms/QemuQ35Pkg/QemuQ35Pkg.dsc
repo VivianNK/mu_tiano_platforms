@@ -1018,6 +1018,12 @@ PlatformSmmProtectionsTestLib|UefiTestingPkg/Library/PlatformSmmProtectionsTestL
 !endif
 
 [Components.X64]
+  UefiTestingPkg/AuditTests/PagingAudit/UEFI/DxePagingAuditApp.inf
+
+[Components.X64]
+  UefiTestingPkg/AuditTests/EventAudit/UEFI/EventAuditApp.inf
+
+[Components.X64]
   #########################################
   # DXE Phase modules
   #########################################
