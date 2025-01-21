@@ -90,14 +90,17 @@ class QemuRunner(uefi_helper_plugin.IUefiHelperPlugin):
 
         args += " -machine q35,smm=" + smm_enabled + accel
         path_to_os = env.GetValue("PATH_TO_OS")
+        path_to_nvme_ns1 = "C:\\Users\\vnowkakeane\Documents\\virtualDrives\\nvmeDrive.vhdx"
+        path_to_nvme_ns2 = "C:\\Users\\vnowkakeane\Documents\\virtualDrives\\nvmeDriveNS2.vhdx"
         if path_to_os is not None:
-            # Potentially dealing with big daddy, give it more juice...
+            # Set guest startup RAM size to 8GB 
             args += " -m 8192"
 
             file_extension = Path(path_to_os).suffix.lower().replace('"', '')
 
             storage_format = {
                 ".vhd": "raw",
+                ".vhdx": "VHDX",
                 ".qcow2": "qcow2",
                 ".iso": "iso",
             }.get(file_extension, None)
@@ -108,8 +111,25 @@ class QemuRunner(uefi_helper_plugin.IUefiHelperPlugin):
             if storage_format == "iso":
                 args += f" -cdrom \"{path_to_os}\""
             else:
+                # if = none?
+                # serial?
                 args += f" -drive file=\"{path_to_os}\",format={storage_format},if=none,id=os_nvme"
                 args += " -device nvme,serial=nvme-1,drive=os_nvme"
+
+                # Second nvme drive with multiple namespaces
+                # why no serial needed?
+                # todo add namespace to drive with OS qcow on it?
+
+                # Create nvme device without a drive - will add namespaces
+                args += " -device nvme,id=nvme-ctrl-0,serial=deadbeef"
+
+                # Add first namespace
+                args += f" -drive file=\"{path_to_nvme_ns1}\",format=VHDX,if=none,id=nvme-ns-1"
+                args += " -device nvme-ns,drive=nvme-ns-1,nsid=1"
+
+                # Add second namespace
+                args += f" -drive file=\"{path_to_nvme_ns2}\",format=VHDX,if=none,id=nvme-ns-2"
+                args += " -device nvme-ns,drive=nvme-ns-2,nsid=2"
         else:
             args += " -m 2048"
 
